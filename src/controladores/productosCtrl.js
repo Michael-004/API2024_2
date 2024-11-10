@@ -25,17 +25,24 @@ export const getproductosxid= async(req, res)=>{
 
 export const postProducto=
 async (req,res)=>{
- try {
-   const {prod_codigo, prod_nombre, prod_stock, prod_precio, prod_activo, prod_imagen }=req.body
-   const[rows]=await conmysql.query('insert into productos (prod_codigo, prod_nombre, prod_stock, prod_precio, prod_activo, prod_imagen ) values(?,?,?,?,?,?)',
-    [prod_codigo, prod_nombre, prod_stock, prod_precio, prod_activo, prod_imagen ])
-    res.send({
-        id:rows.insertId
-    })
- } catch (error) {
-    return res.status(500).json({message:"error del lado del servidor"})
- }
+    try {
+        //console.log(req.body)
+        const {prod_codigo, prod_nombre, prod_stock, prod_precio, prod_activo}=req.body
+        const prod_imagen = req.file ? `/uploads/${req.file.filename}`:null; //capturar la imagen que se envie en un formulario
+        console.log("Datos del producto:",req.body);
+        console.log("Archivo de imagen:",req.file);
+        //console.log(cli_nombre)
+        const [rows]=await conmysql.query('insert into productos (prod_codigo, prod_nombre, prod_stock, prod_precio, prod_activo, prod_imagen) values(?,?,?,?,?,?)',
+            [prod_codigo, prod_nombre, prod_stock, prod_precio, prod_activo, prod_imagen])
+
+        res.send({
+            id:rows.insertId
+        })
+    } catch (error) {
+        return res.status(500).json({message:'error del lado del servidor'})
+    }
 }
+
 
 export const putProducto=
 async (req,res)=>{
@@ -56,19 +63,28 @@ async (req,res)=>{
 
 export const patchProducto=
 async (req,res)=>{
- try {
-    const {id}=req.params
-   const {prod_codigo, prod_nombre, prod_stock, prod_precio, prod_activo, prod_imagen }=req.body
-   const[result]=await conmysql.query('update productos set prod_codigo=IFNULL(?,prod_codigo), prod_nombre=IFNULL(?,prod_nombre), prod_stock=IFNULL(?,prod_stock), prod_precio=IFNULL(?,prod_precio), prod_activo=IFNULL(?,prod_activo), prod_imagen=IFNULL(?,prod_imagen) where prod_id=?',
-    [prod_codigo, prod_nombre, prod_stock, prod_precio, prod_activo, prod_imagen ,id])
-    if(result.affectedRows<=0)return res.status(404).json({
-        message:"cliente no encontrado"
-    })
-    const [rows]=await conmysql.query('select * from productos where prod_id=?',[id])
-    res.json(rows[0])
- } catch (error) {
-    return res.status(500).json({message:"error del lado del servidor"})
- }
+    try {
+        const {id}=req.params
+        //console.log(req.body)
+        const {prod_codigo, prod_nombre, prod_stock, prod_precio, prod_activo}=req.body
+        const prod_imagen = req.file ? `/uploads/${req.file.filename}` :null; //capturar la imagen que se envie en un formulario
+        console.log("Datos del producto:",req.body);
+        console.log("Archivo de imagen:",req.file);
+        //console.log(prod_nombre)
+        const [result]=await conmysql.query('update productos set prod_codigo=IFNULL(?,prod_codigo), prod_nombre=IFNULL(?,prod_nombre), prod_stock=IFNULL(?,prod_stock), prod_precio=IFNULL(?,prod_precio), prod_activo=IFNULL(?,prod_activo), prod_imagen=IFNULL(?,prod_imagen) where prod_id=?',
+            [prod_codigo, prod_nombre, prod_stock, prod_precio, prod_activo, prod_imagen, id])
+
+        if(result.affectedRows<=0)return res.status(404).json({
+            message:'Producto no encontrado'
+        })
+        const[rows]=await conmysql.query('select * from productos where prod_id=?',[id])
+        res.json(rows[0])
+        /* res.send({
+            id:rows.insertId
+        }) */
+    } catch (error) {
+        return res.status(500).json({message:'error del lado del servidor'})
+    }
 }
 
 export const deleteProducto=
